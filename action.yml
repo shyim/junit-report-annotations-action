@@ -1,0 +1,15 @@
+name: 'Junit Report to Annotations'
+description: 'Create an annotation of the Junit output'
+branding:
+  icon: 'box'  
+  color: 'green'
+inputs:
+  access-token:
+    description: 'github token'
+    required: true
+  path:
+    description: 'glob to junit xml files'
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
