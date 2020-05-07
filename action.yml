@@ -4,9 +4,12 @@ branding:
   icon: 'box'  
   color: 'green'
 inputs:
-  access-token:
+  accessToken:
     description: 'github token'
     required: true
+  stripFromPath:
+    description: 'Path to strip from file'
+    required: false
   path:
     description: 'glob to junit xml files'
     required: true

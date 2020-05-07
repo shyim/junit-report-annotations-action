@@ -435,12 +435,12 @@ const github = __webpack_require__(276);
 const glob = __webpack_require__(701);
 const fs = __webpack_require__(747);
 var parseString = __webpack_require__(579).parseStringPromise;
-const stripPrefix = process.cwd() + '/';
 
 (async () => {
     try {
         const path = core.getInput('path');
-        const accessToken = core.getInput('access-token');
+        const stripFromPath = core.getInput('stripFromPath');
+        const accessToken = core.getInput('accessToken');
         
         const globber = await glob.create(path, {followSymbolicLinks: false});
         let annotations = [];
@@ -462,8 +462,14 @@ const stripPrefix = process.cwd() + '/';
                     if (testsuite['$']['errors'] !== '0' || testsuite['$']['failures'] !== '0') {
                         for (let testCase of testsuite.testcase) {
                             if (testCase.failure) {
+                                let file = testCase['$'].file;
+
+                                if (stripFromPath) {
+                                    file = file.replace(stripFromPath, '')
+                                }
+
                                 annotations.push({
-                                    path: testCase['$'].file.replace(stripPrefix, ''),
+                                    path: file,
                                     start_line: testCase['$'].line || '0',
                                     end_line: testCase['$'].line || '0',
                                     start_column: 0,
@@ -489,6 +495,7 @@ const stripPrefix = process.cwd() + '/';
                 ref: github.context.sha
             }
             const res = await octokit.checks.listForRef(req);
+            console.log(res);
             const check_run_id = res.data.check_runs.filter(check => check.name === 'build')[0].id
 
             const update_req = {
