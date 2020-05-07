@@ -1,4 +1,4 @@
-name: 'Junit Report to Annotations'
+name: 'Report jUnit Annotations as Github Actions Annotations'
 description: 'Create an annotation of the Junit output'
 branding:
   icon: 'box'  
