@@ -31,15 +31,21 @@ var parseString = require('xml2js').parseStringPromise;
                         for (let testCase of testsuite.testcase) {
                             if (testCase.failure) {
                                 let file = testCase['$'].file;
+                                let line = testCase['$'].line || '1';
 
                                 if (stripFromPath) {
                                     file = file.replace(stripFromPath, '')
                                 }
 
+                                if (line === '0') {
+                                    line = '1';
+                                }
+
+
                                 annotations.push({
                                     path: file,
-                                    start_line: testCase['$'].line || '0',
-                                    end_line: testCase['$'].line || '0',
+                                    start_line: line,
+                                    end_line: line,
                                     start_column: 0,
                                     end_column: 0,
                                     annotation_level: 'failure',
