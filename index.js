@@ -2,10 +2,10 @@ import * as core from '@actions/core';
 import * as glob from '@actions/glob';
 import * as github from '@actions/github';
 import * as fs from 'fs';
-import { parseString } from 'xml2js';
+import { parseStringPromise } from 'xml2js';
 import { issueCommand } from './command';
 
-const path = core.getInput('path');
+const path = core.getInput('path') || '*.xml';
 const accessToken = core.getInput('accessToken') || '';
 const jobName = core.getInput('jobName');
 const stripFromPath = core.getInput('stripFromPath');
@@ -49,7 +49,7 @@ let writeCommands = async (annotations) => {
         issueCommand(
             annotation.annotation_level === 'failure' ? 'error' : 'warning',
             {
-                file: annotation.file,
+                file: annotation.path,
                 line: annotation.start_line.toString(),
                 col: "0",
             },
@@ -64,9 +64,10 @@ let writeCommands = async (annotations) => {
         let annotations = [];
 
         for await (const file of globber.globGenerator()) {
+            issueCommand('debug', {}, `Processing file ${file}`);
             const data = await fs.promises.readFile(file);
-            let json = await parseString(data);
-        
+            let json = await parseStringPromise(data);
+
             if (json.testsuites === undefined) {
                 continue;
             }

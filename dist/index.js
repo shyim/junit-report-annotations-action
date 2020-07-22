@@ -10201,11 +10201,12 @@ function escapeProperty(s) {
 
 
 
-const path = Object(core.getInput)('path');
+const path = Object(core.getInput)('path') || '*.xml';
 const accessToken = Object(core.getInput)('accessToken') || '';
 const jobName = Object(core.getInput)('jobName');
 const stripFromPath = Object(core.getInput)('stripFromPath');
 const errorLevel = Object(core.getInput)('errorLevel');
+console.log(path);
 
 let sendToGithubUsingApi = async (annotations) => {
     if (accessToken.length === 0) {
@@ -10245,7 +10246,7 @@ let writeCommands = async (annotations) => {
         issueCommand(
             annotation.annotation_level === 'failure' ? 'error' : 'warning',
             {
-                file: annotation.file,
+                file: annotation.path,
                 line: annotation.start_line.toString(),
                 col: "0",
             },
@@ -10260,9 +10261,10 @@ let writeCommands = async (annotations) => {
         let annotations = [];
 
         for await (const file of globber.globGenerator()) {
+            issueCommand('debug', {}, `Processing file ${file}`);
             const data = await Object(external_fs_.promises.readFile)(file);
-            let json = await Object(xml2js.parseString)(data);
-        
+            let json = await Object(xml2js.parseStringPromise)(data);
+
             if (json.testsuites === undefined) {
                 continue;
             }
