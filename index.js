@@ -1,19 +1,71 @@
-const core = require('@actions/core');
-const glob = require('@actions/glob');
-const fs = require('fs');
-var parseString = require('xml2js').parseStringPromise;
+import * as core from '@actions/core';
+import * as glob from '@actions/glob';
+import * as github from '@actions/github';
+import * as fs from 'fs';
+import { parseString } from 'xml2js';
+import { issueCommand } from './command';
+
+const path = core.getInput('path');
+const accessToken = core.getInput('accessToken') || '';
+const jobName = core.getInput('jobName');
+const stripFromPath = core.getInput('stripFromPath');
+const errorLevel = core.getInput('errorLevel');
+
+let sendToGithubUsingApi = async (annotations) => {
+    if (accessToken.length === 0) {
+        throw new Error('No accessToken');
+    }
+
+    const octokit = new github.GitHub(accessToken);
+    const req = {
+        ...github.context.repo,
+        ref: github.context.sha
+    }
+    const res = await octokit.checks.listForRef(req);
+
+    let checkRuns = res.data.check_runs.filter(check => check.name === jobName);
+
+    if (checkRuns.length === 0) {
+        const msg = `Cannot find check by name ${jobName}`;
+        console.log(`${msg}, falling back to commands`);
+    }
+
+    const check_run_id = res.data.check_runs.filter(check => check.name === jobName)[0].id
+
+    const update_req = {
+        ...github.context.repo,
+        check_run_id,
+        output: {
+            title: "Junit Results",
+            summary: `jUnit Results`,
+            annotations: annotations
+        }
+    }
+    await octokit.checks.update(update_req);
+};
+
+let writeCommands = async (annotations) => {
+    for (let annotation of annotations) {
+        issueCommand(
+            annotation.annotation_level === 'failure' ? 'error' : 'warning',
+            {
+                file: annotation.file,
+                line: annotation.start_line.toString(),
+                col: "0",
+            },
+            annotation.message
+        )
+    }
+};
 
 (async () => {
     try {
-        const path = core.getInput('path');
-        const stripFromPath = core.getInput('stripFromPath');
-        const errorLevel = core.getInput('errorLevel');
-
         const globber = await glob.create(path, {followSymbolicLinks: false});
+        let annotations = [];
 
         for await (const file of globber.globGenerator()) {
             const data = await fs.promises.readFile(file);
-            var json = await parseString(data);
+            let json = await parseString(data);
         
             if (json.testsuites === undefined) {
                 continue;
@@ -39,19 +91,30 @@ var parseString = require('xml2js').parseStringPromise;
                                     line = '1';
                                 }
 
-                                core.issueCommand(
-                                    errorLevel,
-                                    {
-                                        file: file,
-                                        line: line,
-                                        col: line,
-                                    },
-                                    testCase.failure[0]['_']
-                                )
+                                annotations.push({
+                                    path: file,
+                                    start_line: line,
+                                    end_line: line,
+                                    start_column: 0,
+                                    end_column: 0,
+                                    annotation_level: errorLevel === 'error' ? 'failure' : 'warning',
+                                    title: testsuite['$'].name + "::" + testCase['$'].name,
+                                    message: testCase.failure[0]['_'],
+                                });
                             }
                         }
                     }
                 }
+            }
+
+            if (annotations.length === 0) {
+                return;
+            }
+
+            try {
+                await sendToGithubUsingApi(annotations);
+            } catch (e) {
+                await writeCommands(annotations);
             }
         }
     } catch(error) {

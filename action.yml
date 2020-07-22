@@ -4,6 +4,13 @@ branding:
   icon: 'box'  
   color: 'green'
 inputs:
+  accessToken:
+    description: 'github token'
+    required: false
+  jobName:
+    description: 'Job Name for the API'
+    default: 'build'
+    required: false
   stripFromPath:
     description: 'Path to strip from file'
     required: false
