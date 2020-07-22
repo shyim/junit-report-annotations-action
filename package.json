@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "ncc build index.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "@actions/core": "^1.2.3",
     "@actions/github": "^2.1.1",
     "@actions/glob": "^0.1.0",
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.4.23",
+    "@zeit/ncc": "^0.22.3"
   }
 }
