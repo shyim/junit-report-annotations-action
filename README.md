@@ -4,6 +4,10 @@ Turn jUnit Reports into Github Action Annotations
 
 ## Inputs
 
+## accessToken
+
+When given it will try to create annotations using API, otherwise using workflow commands
+
 ## path
 
 **Required**
