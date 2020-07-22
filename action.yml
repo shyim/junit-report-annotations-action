@@ -4,14 +4,15 @@ branding:
   icon: 'box'  
   color: 'green'
 inputs:
-  accessToken:
-    description: 'github token'
-    required: true
   stripFromPath:
     description: 'Path to strip from file'
     required: false
   path:
     description: 'glob to junit xml files'
+    required: true
+  errorLevel:
+    description: 'glob to junit xml files'
+    default: 'warning'
     required: true
 runs:
   using: 'node12'
