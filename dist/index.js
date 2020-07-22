@@ -10206,10 +10206,10 @@ const accessToken = Object(core.getInput)('accessToken') || '';
 const jobName = Object(core.getInput)('jobName');
 const stripFromPath = Object(core.getInput)('stripFromPath');
 const errorLevel = Object(core.getInput)('errorLevel');
-console.log(path);
 
 let sendToGithubUsingApi = async (annotations) => {
     if (accessToken.length === 0) {
+        issueCommand('debug', {}, `No accessToken for Github API`);
         throw new Error('No accessToken');
     }
 
@@ -10225,6 +10225,7 @@ let sendToGithubUsingApi = async (annotations) => {
     if (checkRuns.length === 0) {
         const msg = `Cannot find check by name ${jobName}`;
         console.log(`${msg}, falling back to commands`);
+        throw new Error(msg);
     }
 
     const check_run_id = res.data.check_runs.filter(check => check.name === jobName)[0].id
@@ -10312,6 +10313,7 @@ let writeCommands = async (annotations) => {
             try {
                 await sendToGithubUsingApi(annotations);
             } catch (e) {
+                issueCommand('debug', {}, `Github API failed ${e.toString()}`);
                 await writeCommands(annotations);
             }
         }
