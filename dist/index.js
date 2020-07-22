@@ -10213,7 +10213,7 @@ let sendToGithubUsingApi = async (annotations) => {
         throw new Error('No accessToken');
     }
 
-    const octokit = new github.GitHub(accessToken);
+    const octokit = Object(github.getOctokit)(accessToken);
     const req = {
         ...github.context.repo,
         ref: github.context.sha
