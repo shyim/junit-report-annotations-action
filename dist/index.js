@@ -10209,7 +10209,6 @@ const errorLevel = Object(core.getInput)('errorLevel');
 
 let sendToGithubUsingApi = async (annotations) => {
     if (accessToken.length === 0) {
-        issueCommand('debug', {}, `No accessToken for Github API`);
         throw new Error('No accessToken');
     }
 
@@ -10313,7 +10312,7 @@ let writeCommands = async (annotations) => {
             try {
                 await sendToGithubUsingApi(annotations);
             } catch (e) {
-                issueCommand('debug', {}, `Github API failed ${e.toString()}`);
+                issueCommand('warning', {}, `Github API failed ${e.toString()}`);
                 await writeCommands(annotations);
             }
         }
