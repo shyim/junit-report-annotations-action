@@ -11,7 +11,7 @@ inputs:
     description: 'glob to junit xml files'
     required: true
   errorLevel:
-    description: 'glob to junit xml files'
+    description: 'Error level in Annotations (warning, error)'
     default: 'warning'
     required: true
 runs:
