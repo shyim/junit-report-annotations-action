@@ -10265,11 +10265,18 @@ let writeCommands = async (annotations) => {
             const data = await Object(external_fs_.promises.readFile)(file);
             let json = await Object(xml2js.parseStringPromise)(data);
 
-            if (json.testsuites === undefined) {
+            let testsuites = undefined;
+
+            if (json.testsuites !== undefined) {
+                testsuites = json.testsuites.testsuite;
+            } else if (json.testsuite !== undefined) {
+                testsuites = [json.testsuite];
+            } else {
+                issueCommand('warning', {}, `No test suites found in ${file}`);
                 continue;
             }
 
-            for (let row of json.testsuites.testsuite) {
+            for (let row of testsuites) {
                 if (row.testcase !== undefined) {
                     row.testsuite = [row];
                 }
